@@ -48,10 +48,14 @@ enum commandType : uint16_t
   STEPPER_1_SPEED,
   STEPPER_1_ENABLED,
   STEPPER_1_USED,
+  STEPPER_1_STEPS,
+  STEPPER_1_ACCELERATION,
   STEPPER_2_STEPS_PER_REVOLUTION,
   STEPPER_2_SPEED,
   STEPPER_2_ENABLED,
   STEPPER_2_USED,
+  STEPPER_2_STEPS,
+  STEPPER_2_ACCELERATION,
 };
 
 union payload_t {
@@ -96,23 +100,30 @@ void setup()
   digitalWrite(MOTOR_C_ENABLE, LOW);
   digitalWrite(MOTOR_D_ENABLE, LOW);
 
-  stepper1.setMaxSpeed(1000);
-  stepper2.setMaxSpeed(1000);
+  stepper1.setMaxSpeed(200);
+  stepper2.setMaxSpeed(200);
+
+  stepper1.setAcceleration(20);
+  stepper2.setAcceleration(20);
 
   stepper1.setSpeed(0);
   stepper2.setSpeed(0);
+
+  #ifdef DEBUG
+  Serial.println("Ready to recieve");
+  #endif
 }
 
 void loop()
 {
   if (usingStepper1)
   {
-    stepper1.runSpeed();
+    stepper1.run();
   }
 
   if (usingStepper2)
   {
-    stepper2.runSpeed();
+    stepper2.run();
   }
 }
 
@@ -222,27 +233,33 @@ void receiveEvent(int bytes)
       stepper1.setSpeed(lastCommand.payload.integer);
       break;
     case STEPPER_1_ENABLED:
-      if (usingStepper1)
-      {
-        digitalWrite(MOTOR_A_ENABLE, lastCommand.payload.boolean_v);
-        digitalWrite(MOTOR_B_ENABLE, lastCommand.payload.boolean_v);
-      }
+      digitalWrite(MOTOR_A_ENABLE, lastCommand.payload.boolean_v);
+      digitalWrite(MOTOR_B_ENABLE, lastCommand.payload.boolean_v);
       break;
     case STEPPER_1_USED:
       usingStepper1 = lastCommand.payload.boolean_v;
+      break;
+    case STEPPER_1_STEPS:
+      stepper1.move(lastCommand.payload.integer);
+      break;
+    case STEPPER_1_ACCELERATION:
+      stepper1.setAcceleration(lastCommand.payload.integer);
       break;
     case STEPPER_2_SPEED:
       stepper2.setSpeed(lastCommand.payload.integer);
       break;
     case STEPPER_2_ENABLED:
-      if (usingStepper1)
-      {
-        digitalWrite(MOTOR_C_ENABLE, lastCommand.payload.boolean_v);
-        digitalWrite(MOTOR_D_ENABLE, lastCommand.payload.boolean_v);
-      }
+      digitalWrite(MOTOR_C_ENABLE, lastCommand.payload.boolean_v);
+      digitalWrite(MOTOR_D_ENABLE, lastCommand.payload.boolean_v);
       break;
     case STEPPER_2_USED:
       usingStepper2 = lastCommand.payload.boolean_v;
+      break;
+    case STEPPER_2_STEPS:
+      stepper2.move(lastCommand.payload.integer);
+      break;
+    case STEPPER_2_ACCELERATION:
+      stepper2.setAcceleration(lastCommand.payload.integer);
       break;
     default:
       Serial.println("Unknown command. Ignoring.");
