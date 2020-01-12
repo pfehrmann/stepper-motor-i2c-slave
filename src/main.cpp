@@ -50,12 +50,14 @@ enum commandType : uint16_t
   STEPPER_1_USED,
   STEPPER_1_STEPS,
   STEPPER_1_ACCELERATION,
+  STEPPER_1_MAX_SPEED,
   STEPPER_2_STEPS_PER_REVOLUTION,
   STEPPER_2_SPEED,
   STEPPER_2_ENABLED,
   STEPPER_2_USED,
   STEPPER_2_STEPS,
   STEPPER_2_ACCELERATION,
+  STEPPER_2_MAX_SPEED,
 };
 
 union payload_t {
@@ -245,6 +247,9 @@ void receiveEvent(int bytes)
     case STEPPER_1_ACCELERATION:
       stepper1.setAcceleration(lastCommand.payload.integer);
       break;
+    case STEPPER_1_MAX_SPEED:
+      stepper1.setMaxSpeed(lastCommand.payload.integer);
+      break;
     case STEPPER_2_SPEED:
       stepper2.setSpeed(lastCommand.payload.integer);
       break;
@@ -260,6 +265,9 @@ void receiveEvent(int bytes)
       break;
     case STEPPER_2_ACCELERATION:
       stepper2.setAcceleration(lastCommand.payload.integer);
+      break;
+    case STEPPER_2_MAX_SPEED:
+      stepper2.setMaxSpeed(lastCommand.payload.integer);
       break;
     default:
       Serial.println("Unknown command. Ignoring.");
